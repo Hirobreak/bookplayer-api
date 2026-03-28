@@ -6,6 +6,7 @@ import {
   User,
   ItemMatchPayload,
   MatchUuidsResult,
+  ExternalResource,
 } from '../types/user';
 
 export interface ILibraryService {
@@ -41,6 +42,7 @@ export interface ILibraryService {
     appVersion?: string,
   ): Promise<LibraryItem>;
   PutObject(user: User, params: LibraryItem): Promise<LibraryItem>;
+  PutExternalResource(user: User, libraryItemUuid: string, externalResource: ExternalResource): Promise<ExternalResource>;
   DeleteObject(user: User, params: LibraryItem): Promise<string[]>;
   UpdateObject(
     user: User,

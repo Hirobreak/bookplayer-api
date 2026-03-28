@@ -8,6 +8,7 @@ export interface ILibraryController {
   ): Promise<IResponse>;
   getLibraryObject(req: IRequest, res: IResponse, _: INext): Promise<IResponse>;
   putLibraryObject(req: IRequest, res: IResponse, _: INext): Promise<IResponse>;
+  putExternalResource(req: IRequest, res: IResponse, _: INext): Promise<IResponse>;
   deleteLibraryObject(
     req: IRequest,
     res: IResponse,

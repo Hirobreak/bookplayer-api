@@ -26,6 +26,9 @@ export class LibraryRouter implements ILibraryRouter {
     router.put('/', middleWareInit, (req, res, next) =>
       this._controller.putLibraryObject(req, res, next).catch(next),
     );
+    router.put('/external', middleWareInit, (req, res, next) =>
+      this._controller.putExternalResource(req, res, next).catch(next),
+    );
     router.delete('/', middleWareInit, (req, res, next) =>
       this._controller.deleteLibraryObject(req, res, next).catch(next),
     );
