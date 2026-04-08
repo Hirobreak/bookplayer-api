@@ -543,6 +543,7 @@ export class LibraryService {
         acc[libId].push(source);
         return acc;
       }, {} as Record<number, ExternalResourceDb[]>);
+      console.log('hey ho record', externalsMp)
       const library: LibraryItem[] = [];
       for (let index = 0; index < objectDB.length; index++) {
         const itemDb = objectDB[index];
@@ -602,10 +603,11 @@ export class LibraryService {
           url: fileUrl,
           thumbnail,
           synced: itemDb.synced,
-          externalResources: externalsMp[itemDb.id_library_item]
+          externalResources: externalsMp[itemDb.id_library_item] ?? []
         };
         library.push(libObj);
       }
+      console.log('hey ho 2', library)
       return library;
     } catch (err) {
       this._logger.log({
@@ -1306,6 +1308,8 @@ export class LibraryService {
         itemDb,
         LibraryItemOutput.API,
       )) as LibraryItem;
+      const externals = await this.dbGetExternalResources([(itemDb as LibraryItemDB).id_library_item]);
+      item.externalResources = externals;
       switch (options.appVersion) {
         case '2023-10-29':
         case 'latest':
