@@ -13,6 +13,7 @@ export type User = {
   session?: string;
   params?: UserParamsObject;
   external_id?: string;
+  subscriptions?: SubscriptionTier[]
 };
 
 export type SubscriptionUser = {
@@ -46,6 +47,27 @@ export type UserParam = {
   created_at?: string;
   updated_at?: string;
 };
+
+export enum SubscriptionTierEnum {
+  FREE = 'free',
+  PLUS = 'plus',
+  LITE = 'lite',
+  PRO = 'pro',
+}
+
+export type SubscriptionTier = SubscriptionTierEnum.FREE 
+  | SubscriptionTierEnum.PLUS 
+  | SubscriptionTierEnum.LITE 
+  | SubscriptionTierEnum.PRO;
+
+export type UserState = {
+  id_user: number,
+  email: string,
+  external_id: string,
+  period_type: string,
+  type: string,
+  entitlement_ids: SubscriptionTier[]
+}
 
 export type AppleJWT = {
   iss: string;

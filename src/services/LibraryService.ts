@@ -12,6 +12,7 @@ import {
   MatchUuidsResult,
   ExternalResource,
   ExternalResourceDb,
+  SubscriptionTierEnum
 } from '../types/user';
 import { Knex } from 'knex';
 import database from '../database';
@@ -492,7 +493,7 @@ export class LibraryService {
       const whereClause = isValidUUID(uuid)
         ? {
           user_id,
-          uuid: uuid as string,
+          uuid: uuid,
         }
         : {
           user_id,
@@ -509,7 +510,7 @@ export class LibraryService {
       this._logger.log({
         origin: 'dbUpdateLibraryItem',
         message: err.message,
-        data: { user_id, key, item },
+        data: { user_id, key, item, uuid },
       });
       return false;
     }
@@ -543,7 +544,7 @@ export class LibraryService {
         acc[libId].push(source);
         return acc;
       }, {} as Record<number, ExternalResourceDb[]>);
-      console.log('hey ho record', externalsMp)
+
       const library: LibraryItem[] = [];
       for (let index = 0; index < objectDB.length; index++) {
         const itemDb = objectDB[index];
@@ -607,7 +608,6 @@ export class LibraryService {
         };
         library.push(libObj);
       }
-      console.log('hey ho 2', library)
       return library;
     } catch (err) {
       this._logger.log({
@@ -790,18 +790,27 @@ export class LibraryService {
       } else {
         itemDb = await this.dbInsertLibraryItem(user.id_user, libObj);
       }
+      const apiResponse = (await this.ParseLibraryItemDbB(
+        itemDb,
+        LibraryItemOutput.API,
+      )) as LibraryItem;
+      
+
+      if (!user.subscriptions.includes(SubscriptionTierEnum.PRO)) {
+        apiResponse.url = null;
+        return apiResponse
+      }
+
       const resourcePath = `${user.email}/${libObj.source_path}`;
 
       const { url, expires_in } = await this._storage.GetPresignedUrl({
         key: resourcePath,
         type: StorageAction.PUT,
       });
-      const apiResponse = (await this.ParseLibraryItemDbB(
-        itemDb,
-        LibraryItemOutput.API,
-      )) as LibraryItem;
+
       apiResponse.url = url;
       apiResponse.expires_in = expires_in;
+      console.log("HEY HO YES PRO SIGNED", url)
       return apiResponse;
     } catch (err) {
       this._logger.log({

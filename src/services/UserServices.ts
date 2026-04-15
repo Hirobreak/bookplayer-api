@@ -11,6 +11,7 @@ import {
   UserParam,
   UserParamsObject,
   UserSession,
+  UserState,
 } from '../types/user';
 import verifyAppleToken from 'verify-apple-id-token';
 import { Knex } from 'knex';
@@ -250,7 +251,7 @@ export class UserServices {
     }
   }
 
-  async getUserSubscriptionState(user_id: number): Promise<string> {
+  async getUserSubscriptionState(user_id: number): Promise<UserState | null> {
     try {
       // After migration, external_id contains Apple ID for Apple users or UUID for passkey users
       // This allows us to search subscription_events directly without joining user_params
@@ -259,7 +260,12 @@ export class UserServices {
           `
         select usr.id_user, usr.email, usr.external_id,
           coalesce(subscription_one.period_type, subscription_two.period_type, subscription_aliases.period_type) as period_type,
-          coalesce(subscription_one.type, subscription_two.type, subscription_aliases.type) as type
+          coalesce(subscription_one.type, subscription_two.type, subscription_aliases.type) as type,
+          coalesce(
+              subscription_one.json->'entitlement_ids', 
+              subscription_two.json->'entitlement_ids', 
+              subscription_aliases.json->'entitlement_ids'
+          ) as entitlement_ids
         from users usr
         left join lateral (
           select * from subscription_events sevent where sevent.original_app_user_id=usr.external_id
@@ -282,7 +288,10 @@ export class UserServices {
           [user_id],
         )
         .then((res) => res.rows[0]);
-      return userState?.type || null;
+      console.log('hey ho', userState)
+      return userState
+        ? userState as UserState
+        : null;
     } catch (err) {
       this._logger.log({
         origin: 'getUserSubscriptionState',

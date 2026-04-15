@@ -6,6 +6,7 @@ import {
   UserSession,
   UserEventEnum,
   UserEvent,
+  UserState,
 } from '../types/user';
 
 export interface IUserService {
@@ -17,7 +18,7 @@ export interface IUserService {
   GetUserByExternalId(external_ids: string[]): Promise<SubscriptionUser>;
   UpdateSubscription(user_id: number, subscription: string): Promise<boolean>;
   DeleteAccount(user_id: number): Promise<boolean>;
-  getUserSubscriptionState(user_id: number): Promise<string>;
+  getUserSubscriptionState(user_id: number): Promise<UserState | null>;
   getClientID(p: { origin: string }): Promise<{
     apple_id: string;
     app_version: string;
