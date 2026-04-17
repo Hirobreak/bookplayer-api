@@ -1563,7 +1563,7 @@ export class LibraryService {
       // 2. Fetch current state using the 'trx' object
       const existingItems = await trx('library_items')
         .select('key', 'uuid')
-        .where({ user_id: user.id_user })
+        .where({ user_id: user.id_user, active: true })
         .whereIn('key', serverKeys)
         .forUpdate();
 
@@ -1594,7 +1594,8 @@ export class LibraryService {
           trx('library_items')
             .where({
               user_id: user.id_user,
-              key: item.key
+              key: item.key,
+              active: true
             })
             .update({ uuid: item.uuid })
         );
