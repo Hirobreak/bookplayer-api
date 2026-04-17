@@ -5,6 +5,7 @@ import { ILibraryRouter } from '../interfaces/IRouters';
 import { ILibraryController } from '../interfaces/ILibraryController';
 import { ISubscriptionMiddleware } from '../interfaces/ISubscriptionMiddleware';
 import { INext, IRequest, IResponse } from '../interfaces/IRequest';
+import { SubscriptionTierEnum } from '../types/user';
 
 @injectable()
 export class LibraryRouter implements ILibraryRouter {
@@ -58,6 +59,9 @@ export class LibraryRouter implements ILibraryRouter {
     );
     router.post('/thumbnail_set', middleWareInit, (req, res, next) =>
       this._controller.itemThumbnailPutRequest(req, res, next).catch(next),
+    );
+    router.post('/external_set', middleWareInit, this._subscription.requireSubscription([SubscriptionTierEnum.PRO]), (req, res, next) =>
+      this._controller.itemPutRequest(req, res, next).catch(next),
     );
     router.get('/keys', middleWareInit, (req, res, next) =>
       this._controller.getUserLibraryKeys(req, res, next).catch(next),
