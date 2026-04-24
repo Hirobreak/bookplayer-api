@@ -783,7 +783,12 @@ export class LibraryService {
           key: `${user.email}/${itemDb.source_path || itemDb.key}`,
         });
         if (fileExists === true) {
-          return null;
+          const earlyApiResponse = (await this.ParseLibraryItemDbB(
+            itemDb,
+            LibraryItemOutput.API,
+          )) as LibraryItem;
+          
+          return earlyApiResponse;
         }
         // Override the source path with the stored path
         if (itemDb.source_path) {
@@ -792,6 +797,7 @@ export class LibraryService {
       } else {
         itemDb = await this.dbInsertLibraryItem(user.id_user, libObj);
       }
+
       const apiResponse = (await this.ParseLibraryItemDbB(
         itemDb,
         LibraryItemOutput.API,
@@ -1483,16 +1489,36 @@ export class LibraryService {
     user: User,
     params: {
       uuid: string;
+      uploaded?: boolean;
     },
   ): Promise<string | boolean> {
     try {
-      const { uuid } = params;
+      const { uuid, uploaded } = params;
       const objectDB = await this.dbGetLibraryByUuid(user.id_user, uuid, {
         exactly: true,
       });
       const itemDb = objectDB?.[0];
       if (!itemDb) {
         throw new Error('Item not exists');
+      }
+      if (uploaded) {
+        const idExternal = await this.db('external_resources')
+          .update({
+            syncStatus: 'downloaded',
+          })
+          .where({
+            library_item_id: itemDb.id_library_item,
+          })
+          .returning('library_item_id');
+        const idUpdated = await this.db('library_items')
+          .update({
+            synced: true,
+          })
+          .where({
+            id_library_item: itemDb.id_library_item,
+          })
+          .returning('id_library_item');
+        return !!idExternal[0].library_item_id && !!idUpdated[0].id_library_item;
       }
       const originalFile = itemDb.source_path || itemDb.key;
       const { url } = await this._storage.GetPresignedUrl({

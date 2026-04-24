@@ -288,7 +288,6 @@ export class UserServices {
           [user_id],
         )
         .then((res) => res.rows[0]);
-      console.log('hey ho', userState)
       return userState
         ? userState as UserState
         : null;
